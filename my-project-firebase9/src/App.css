@@ -1,5 +1,5 @@
 .wrapper {
-  width: 700px;
+  width: 90%;
   height: 100vh;
   margin: 0 auto;
   display: flex;
@@ -11,12 +11,12 @@
 }
 .header {
   text-align: center;
-  height: 10vh;
+  min-height: 20vh;
   border: 1px solid white;
   width: 100%;
 }
 .main {
-  height: 70vh;
+  height: 60vh;
 }
 .footer {
   text-align: center;
@@ -24,14 +24,14 @@
   border: 1px solid white;
   width: 100%;
 }
-.add {
+/* .add {
   display: flex;
   flex-direction: column;
 }
 .delete {
   display: flex;
   flex-direction: column;
-}
+} */
 button {
   margin: 10px;
 }

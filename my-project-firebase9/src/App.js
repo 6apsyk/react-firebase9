@@ -1,3 +1,4 @@
+import Header from './Header'
 import "./App.css";
 import {
   collection,
@@ -9,18 +10,19 @@ import {
   where,
   orderBy,
   serverTimestamp,
-  getDoc
+  getDoc,
+  updateDoc
 } from "firebase/firestore";
 import { db } from "./index";
 import { useEffect, useState } from "react";
 
-function App() {
+function App({ auth }) {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [id, setId] = useState("");
 
-//ccылка на коллекцию
+  //ccылка на коллекцию
   const collectionBooks = collection(db, "books");
 
   // подписка на обновлении коллекции books
@@ -44,17 +46,25 @@ function App() {
       snapshot.docs.forEach((doc) => {
         books2.push({ ...doc.data(), id: doc.id });
       });
-      console.log('TOM',books2);
+      console.log('TOM', books2);
     });
   }, []);
 
+  // Подписка на изменение в документе
+  useEffect(() => {
+    const docRef = doc(db, "books", 'VE4Er5Co1qhckPQbpUol');
+    onSnapshot(docRef, (doc) => {
+      console.log('Измененный документ', doc.data(), doc.id)
+    })
+  }, [])
+
   //Запрос документа из коллекции books
   useEffect(() => {
-    if (id !== ''){
+    if (id !== '') {
       const docRef = doc(db, "books", id);
-      getDoc(docRef).then(doc => console.log('Запрос по id: ',doc.data(), doc.id ))
+      getDoc(docRef).then(doc => console.log('Запрос по id: ', doc.data(), doc.id))
     }
-  },[id])
+  }, [id])
 
   //Добавление в коллецию
   const submitAdd = (e) => {
@@ -77,20 +87,31 @@ function App() {
     e.preventDefault();
     const docRef = doc(db, "books", e.target.id.value);
     deleteDoc(docRef)
-    .then(() => setId(""))
-    .then(() => setLoading(false));
+      .then(() => setId(""))
+      .then(() => setLoading(false));
   };
+
+  //обновление данных в документе коллекции
+  const submitUpdate = (e) => {
+    e.preventDefault();
+    const docRef = doc(db, "books", e.target.id.value);
+    updateDoc(docRef, {
+      title: e.target.newtitle.value,
+      author: e.target.newauthor.value
+    })
+  }
 
   const onDeleteBook = (id) => {
     setId(id);
   };
 
+  const [view, setView] = useState(true)
+
   return (
     <div className="wrapper">
-      <div className="header">
-        <h1>Firebase9</h1>
-      </div>
+      {view && <Header auth={auth} />}
       <div className="main">
+        <button onClick={() => setView(value => !value)}>Спрятать HEADER</button>
         <div style={{ marginBottom: 20 }}>
           {books.map((book) => (
             <div
@@ -116,6 +137,7 @@ function App() {
           <input type="text" name="author" required />
           <button>add new books</button>
         </form>
+
         <form onSubmit={submitDelete} className="delete">
           <label>Delete Id:</label>
           <input
@@ -126,6 +148,22 @@ function App() {
             required
           />
           <button>delete a book</button>
+        </form>
+
+        <form onSubmit={submitUpdate} className="update">
+          <label>Update Id:</label>
+          <input
+            type="text"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            name="id"
+            required
+          />
+          <label>Title:</label>
+          <input name='newtitle' type='text' />
+          <label>Author:</label>
+          <input name='newauthor' type='text' />
+          <button>update a book</button>
         </form>
       </div>
       <div className="footer">
